@@ -15,6 +15,7 @@ import {
   X,
   Zap,
   Keyboard,
+  User,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { GlassCard, SectionTitle } from "@/components/kit/GlassCard";
@@ -46,7 +47,7 @@ type ResultRecord = {
 
 function ProfilePage() {
   const { isEnglish } = useLanguage();
-  const { currentUser, isLoaded, updateProfileName, logout } = useAuth();
+  const { currentUser, isGuest, isLoaded, updateProfileName, logout } = useAuth();
   const navigate = useNavigate();
   const [history, setHistory] = useState<ResultRecord[]>([]);
 
@@ -88,7 +89,7 @@ function ProfilePage() {
   };
 
   useEffect(() => {
-    if (isLoaded && !currentUser) {
+    if (isLoaded && !currentUser && !isGuest) {
       navigate({ to: "/login" });
       return;
     }
@@ -112,7 +113,7 @@ function ProfilePage() {
         setHistory([]);
       }
     }
-  }, [currentUser, isLoaded, navigate]);
+  }, [currentUser, isGuest, isLoaded, navigate]);
 
   const userName = currentUser || "Guest";
   const userInitial = userName.trim() ? (userName.trim()[0] || "G").toUpperCase() : "G";
@@ -338,7 +339,7 @@ function ProfilePage() {
     } catch (e) {}
   };
 
-  if (!isLoaded || !currentUser) {
+  if (!isLoaded || (!currentUser && !isGuest)) {
     return null;
   }
 
@@ -353,15 +354,23 @@ function ProfilePage() {
           <div className="flex items-start gap-5 min-w-0">
             {/* Avatar */}
             <div className="relative shrink-0">
+              {isGuest ? (
+                <span
+                  className="flex size-20 sm:size-[88px] items-center justify-center rounded-3xl shadow-md border-2 border-white/60 bg-secondary/80 dark:bg-[#1C304D]"
+                >
+                  <User className="size-10 sm:size-12 text-muted-foreground dark:text-[#8EA0B8]" />
+                </span>
+              ) : (
+                <span
+                  className="flex size-20 sm:size-[88px] items-center justify-center rounded-3xl font-bold text-3xl sm:text-4xl text-primary-foreground uppercase shadow-md border-2 border-white/60"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  {userInitial}
+                </span>
+              )}
               <span
-                className="flex size-20 sm:size-[88px] items-center justify-center rounded-3xl font-bold text-3xl sm:text-4xl text-primary-foreground uppercase shadow-md border-2 border-white/60"
-                style={{ background: "var(--gradient-primary)" }}
-              >
-                {userInitial}
-              </span>
-              <span
-                className="absolute -bottom-1 -right-1 size-5 rounded-full bg-success border-2 border-white shadow-xs"
-                title="Account Active"
+                className={`absolute -bottom-1 -right-1 size-5 rounded-full border-2 border-white shadow-xs ${isGuest ? "bg-amber-500" : "bg-success"}`}
+                title={isGuest ? "Guest Mode" : "Account Active"}
               />
             </div>
 
@@ -369,15 +378,22 @@ function ProfilePage() {
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="font-hindi text-2xl sm:text-3xl font-bold text-foreground truncate leading-tight">
-                  {currentUser}
+                  {isGuest ? "Guest Profile" : currentUser}
                 </h2>
                 <span className="text-[11px] font-bold text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                  Local Typist
+                  {isGuest ? "Guest Mode" : "Local Typist"}
                 </span>
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-success bg-success/10 border border-success/20 px-2.5 py-0.5 rounded-full">
-                  <span className="size-1.5 rounded-full bg-success animate-pulse" />
-                  Account Active
-                </span>
+                {isGuest ? (
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-amber-600 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full">
+                    <span className="size-1.5 rounded-full bg-amber-500" />
+                    Guest Session
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-success bg-success/10 border border-success/20 px-2.5 py-0.5 rounded-full">
+                    <span className="size-1.5 rounded-full bg-success animate-pulse" />
+                    Account Active
+                  </span>
+                )}
               </div>
 
               {/* XP & Joined date */}
@@ -433,16 +449,25 @@ function ProfilePage() {
 
           {/* Primary action — desktop right-side, mobile full-width below */}
           <div className="shrink-0 self-start sm:self-center">
-            <button
-              onClick={() => {
-                setNewUserName(currentUser);
-                setIsEditModalOpen(true);
-              }}
-              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all shadow-xs hover:shadow group cursor-pointer"
-            >
-              <Pencil className="size-4 transition-transform group-hover:rotate-12" />
-              <span>Edit Profile</span>
-            </button>
+            {isGuest ? (
+              <Link
+                to="/login"
+                className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all shadow-xs hover:shadow cursor-pointer"
+              >
+                <span>Login / Register</span>
+              </Link>
+            ) : (
+              <button
+                onClick={() => {
+                  setNewUserName(currentUser || "");
+                  setIsEditModalOpen(true);
+                }}
+                className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all shadow-xs hover:shadow group cursor-pointer"
+              >
+                <Pencil className="size-4 transition-transform group-hover:rotate-12" />
+                <span>Edit Profile</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -727,8 +752,8 @@ function ProfilePage() {
           {/* Logout */}
           <div className="flex items-center justify-between pt-4 pb-1">
             <div>
-              <p className="text-sm font-medium text-foreground">Sign out</p>
-              <p className="text-xs text-muted-foreground">Remove your session from this device</p>
+              <p className="text-sm font-medium text-foreground">{isGuest ? "Exit Guest Mode" : "Sign out"}</p>
+              <p className="text-xs text-muted-foreground">{isGuest ? "Exit guest session and return to login" : "Remove your session from this device"}</p>
             </div>
             <button
               onClick={async () => {
@@ -737,7 +762,7 @@ function ProfilePage() {
               }}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-destructive border border-destructive/30 bg-destructive/5 rounded-xl hover:bg-destructive/10 hover:border-destructive/50 transition-all cursor-pointer"
             >
-              Sign out
+              {isGuest ? "Exit Guest" : "Sign out"}
             </button>
           </div>
         </div>

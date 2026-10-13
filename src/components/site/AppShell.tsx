@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from "@tanstack/react-router";
-import { Keyboard, Menu, X, ChevronDown } from "lucide-react";
+import { Keyboard, Menu, X, ChevronDown, User } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -46,7 +46,7 @@ function ThemeToggle() {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const { currentUser, logout } = useAuth();
+  const { currentUser, isGuest, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
@@ -173,24 +173,34 @@ export function AppShell({ children }: { children: ReactNode }) {
             {/* Global theme toggle — visible on all screen sizes */}
             <ThemeToggle />
 
-            {currentUser ? (
-              <>
-                <Link
-                  to="/profile"
-                  className="hidden rounded-full border border-border dark:border-white/10 bg-white/80 dark:bg-[#1C304D] px-4 py-2 text-sm font-medium text-foreground dark:text-[#F4F7FB] transition-colors hover:bg-white dark:hover:bg-[#1C304D]/80 md:inline-flex items-center gap-2"
-                >
-                  <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold uppercase">
-                    {currentUser[0]}
-                  </span>
-                  Profile
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="hidden rounded-full border border-border dark:border-white/10 px-4 py-2 text-sm font-semibold text-foreground dark:text-[#F4F7FB] transition-colors hover:bg-secondary dark:hover:bg-white/10 md:inline-flex"
-                >
-                  Logout
-                </button>
-              </>
+            <Link
+              to="/profile"
+              className="hidden rounded-full border border-border dark:border-white/10 bg-white/80 dark:bg-[#1C304D] px-4 py-2 text-sm font-medium text-foreground dark:text-[#F4F7FB] transition-colors hover:bg-white dark:hover:bg-[#1C304D]/80 md:inline-flex items-center gap-2"
+            >
+              {currentUser && !isGuest ? (
+                <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold uppercase">
+                  {currentUser[0]}
+                </span>
+              ) : (
+                <User className="size-4 text-muted-foreground dark:text-[#8EA0B8]" />
+              )}
+              Profile
+            </Link>
+
+            {currentUser && !isGuest ? (
+              <button
+                onClick={handleLogout}
+                className="hidden rounded-full border border-border dark:border-white/10 px-4 py-2 text-sm font-semibold text-foreground dark:text-[#F4F7FB] transition-colors hover:bg-secondary dark:hover:bg-white/10 md:inline-flex"
+              >
+                Logout
+              </button>
+            ) : isGuest ? (
+              <button
+                onClick={handleLogout}
+                className="hidden rounded-full border border-border dark:border-white/10 px-4 py-2 text-sm font-semibold text-foreground dark:text-[#F4F7FB] transition-colors hover:bg-secondary dark:hover:bg-white/10 md:inline-flex"
+              >
+                Exit Guest
+              </button>
             ) : (
               <Link
                 to="/login"
@@ -271,15 +281,21 @@ export function AppShell({ children }: { children: ReactNode }) {
                   </Link>
                 );
               })}
-              {currentUser ? (
-                <Link
-                  to="/profile"
-                  onClick={() => setOpen(false)}
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors mb-1"
-                >
-                  Profile
-                </Link>
-              ) : (
+              <Link
+                to="/profile"
+                onClick={() => setOpen(false)}
+                className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors mb-1 flex items-center gap-2"
+              >
+                {currentUser && !isGuest ? (
+                  <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-bold uppercase">
+                    {currentUser[0]}
+                  </span>
+                ) : (
+                  <User className="size-4 text-muted-foreground dark:text-[#8EA0B8]" />
+                )}
+                Profile
+              </Link>
+              {!currentUser && !isGuest && (
                 <Link
                   to="/login"
                   onClick={() => setOpen(false)}
@@ -288,7 +304,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   Login
                 </Link>
               )}
-              {currentUser && (
+              {currentUser && !isGuest && (
                 <button
                   onClick={async () => {
                     await handleLogout();
@@ -297,6 +313,17 @@ export function AppShell({ children }: { children: ReactNode }) {
                   className="rounded-lg px-3 py-2.5 text-left text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"
                 >
                   Logout
+                </button>
+              )}
+              {isGuest && (
+                <button
+                  onClick={async () => {
+                    await handleLogout();
+                    setOpen(false);
+                  }}
+                  className="rounded-lg px-3 py-2.5 text-left text-sm font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40"
+                >
+                  Exit Guest Mode
                 </button>
               )}
             </div>

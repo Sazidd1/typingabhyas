@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useAuth } from "@/lib/auth";
-import { useLanguage } from "@/lib/useLanguage";
+import { User } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -44,7 +44,6 @@ function IsoGrid({ side }: { side: "left" | "right" }) {
 }
 
 function LoginPage() {
-  const { isEnglish } = useLanguage();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -61,8 +60,13 @@ function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [successView, setSuccessView] = useState(false);
 
-  const { login, signup, resetPassword, logout } = useAuth();
+  const { login, signup, resetPassword, logout, enterGuestMode } = useAuth();
   const navigate = useNavigate();
+
+  const handleContinueAsGuest = () => {
+    enterGuestMode();
+    navigate({ to: "/" });
+  };
 
   const isSignup = mode === "signup";
 
@@ -220,6 +224,12 @@ function LoginPage() {
         @keyframes spin { to { transform:rotate(360deg); } }
 
         .footer-line { text-align:center; margin-top:32px; font-size:14px; color:#475467; }
+        .guest-divider { display:flex; align-items:center; text-align:center; margin:20px 0 16px; }
+        .guest-divider::before, .guest-divider::after { content:''; flex:1; border-bottom:1px solid #e3e8f2; }
+        .guest-divider span { padding:0 12px; color:#6b7590; font-size:13px; font-weight:500; }
+        .guest-btn { width:100%; border:1.5px solid #e3e8f2; border-radius:10px; padding:12px; background:#fff; color:#344054; font-family:'Inter',sans-serif; font-weight:600; font-size:14.5px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all .2s ease; box-shadow:0 1px 2px rgba(16,24,40,.05); }
+        .guest-btn:hover { background:#f8fafc; border-color:#cbd5e1; color:#101828; }
+        .guest-btn:active { transform:scale(.99); }
 
         .success-view { display:none; text-align:center; }
         .success-view.show { display:block; animation:fadeUp .5s ease forwards; }
@@ -249,24 +259,16 @@ function LoginPage() {
               <span className="brand-abhyas">Abhyas</span>
             </div>
           </div>
-          <h1>
-            {isSignup
-              ? isEnglish
-                ? "Create account"
-                : "खाता बनाएं"
-              : isEnglish
-                ? "Login"
-                : "लॉगिन"}
-          </h1>
+          <h1>{isSignup ? "Create account" : "Login"}</h1>
 
           <form onSubmit={handleSubmit}>
             {isSignup && (
               <div className="field">
-                <label>{isEnglish ? "Full name" : "पूरा नाम"}</label>
+                <label>Full name</label>
                 <div className="input-shell">
                   <input
                     type="text"
-                    placeholder={isEnglish ? "Your full name" : "आपका पूरा नाम"}
+                    placeholder="Your full name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
@@ -276,7 +278,7 @@ function LoginPage() {
             )}
 
             <div className="field">
-              <label>{isEnglish ? "Email" : "ईमेल"}</label>
+              <label>Email</label>
               <div className={`input-shell ${emailError ? "error" : ""}`}>
                 <input
                   type="email"
@@ -293,16 +295,12 @@ function LoginPage() {
                 className={`err-msg ${emailError || forgotActive ? "show" : ""}`}
                 style={forgotActive ? { color: "var(--success)" } : {}}
               >
-                {forgotActive
-                  ? forgotMsg
-                  : isEnglish
-                    ? "Please enter a valid email address"
-                    : "कृपया एक वैध ईमेल पता दर्ज करें"}
+                {forgotActive ? forgotMsg : "Please enter a valid email address"}
               </div>
             </div>
 
             <div className="field">
-              <label>{isEnglish ? "Password" : "पासवर्ड"}</label>
+              <label>Password</label>
               <div className={`input-shell ${passError ? "error" : ""}`}>
                 <input
                   type={showPassword ? "text" : "password"}
@@ -342,15 +340,13 @@ function LoginPage() {
                 </button>
               </div>
               <div className={`err-msg ${passError ? "show" : ""}`}>
-                {isEnglish
-                  ? "Password must be at least 6 characters"
-                  : "पासवर्ड कम से कम 6 अक्षरों का होना चाहिए"}
+                Password must be at least 6 characters
               </div>
             </div>
 
             <div className="row-between" style={{ visibility: isSignup ? "hidden" : "visible" }}>
               <a className="link" onClick={handleForgot}>
-                {isEnglish ? "Forgot password?" : "पासवर्ड भूल गए?"}
+                Forgot password?
               </a>
             </div>
 
@@ -361,7 +357,7 @@ function LoginPage() {
             >
               <span className="spinner"></span>
               <span className="btn-text">
-                {isSignup ? (isEnglish ? "Sign up" : "साइन अप") : isEnglish ? "Login" : "लॉगिन"}
+                {isSignup ? "Sign up" : "Login"}
               </span>
             </button>
           </form>
@@ -369,20 +365,33 @@ function LoginPage() {
           <div className="footer-line">
             {isSignup ? (
               <>
-                {isEnglish ? "Already have an account? " : "क्या आपके पास पहले से खाता है? "}
+                Already have an account?{" "}
                 <a className="link" onClick={handleToggleMode}>
-                  {isEnglish ? "Login" : "लॉगिन"}
+                  Login
                 </a>
               </>
             ) : (
               <>
-                {isEnglish ? "Don't have an account? " : "क्या आपके पास खाता नहीं है? "}
+                Don't have an account?{" "}
                 <a className="link" onClick={handleToggleMode}>
-                  {isEnglish ? "Sign up" : "साइन अप"}
+                  Sign up
                 </a>
               </>
             )}
           </div>
+
+          <div className="guest-divider">
+            <span>or</span>
+          </div>
+
+          <button
+            type="button"
+            className="guest-btn"
+            onClick={handleContinueAsGuest}
+          >
+            <User className="size-4 text-muted-foreground" />
+            <span>Continue as Guest</span>
+          </button>
         </div>
 
         <div className={`success-view ${successView ? "show" : ""}`}>
@@ -399,26 +408,16 @@ function LoginPage() {
             </svg>
           </div>
           <h2>
-            {isSignup
-              ? isEnglish
-                ? "Account created!"
-                : "खाता बन गया!"
-              : isEnglish
-                ? "Welcome back!"
-                : "वापसी पर स्वागत है!"}
+            {isSignup ? "Account created!" : "Welcome back!"}
           </h2>
           <p>
-            {isEnglish
-              ? isSignup
-                ? "Your account has been created successfully"
-                : "You have successfully logged in"
-              : isSignup
-                ? "आपका खाता सफलतापूर्वक बन गया है"
-                : "आपने सफलतापूर्वक लॉगिन कर लिया है"}
+            {isSignup
+              ? "Your account has been created successfully"
+              : "You have successfully logged in"}
           </p>
 
           <button className="ghost-btn" onClick={handleLogoutTryAgain}>
-            {isEnglish ? "Log out and try again" : "लॉग आउट करें और पुनः प्रयास करें"}
+            Log out and try again
           </button>
         </div>
       </div>
