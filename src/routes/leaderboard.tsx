@@ -66,6 +66,7 @@ function LeaderboardPage() {
       const key = localStorage.key(i);
       if (key && key.startsWith("results_")) {
         const username = key.replace("results_", "");
+        if (username.toLowerCase() === "guest") continue;
         try {
           const results = JSON.parse(localStorage.getItem(key) || "[]");
           if (Array.isArray(results)) {

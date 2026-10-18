@@ -1,16 +1,14 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { Keyboard, Eye, EyeOff, Loader2, Sparkles } from "lucide-react";
+import { Keyboard, Eye, EyeOff, Loader2, Sparkles, User } from "lucide-react";
 import { useState } from "react";
 import { GlassCard } from "@/components/kit/GlassCard";
 import { useAuth } from "@/lib/auth";
-import { useLanguage } from "@/lib/useLanguage";
 
 export const Route = createFileRoute("/signup")({
   component: SignupPage,
 });
 
 function SignupPage() {
-  const { isEnglish } = useLanguage();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,8 +18,13 @@ function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { signup } = useAuth();
+  const { signup, enterGuestMode } = useAuth();
   const navigate = useNavigate();
+
+  const handleContinueAsGuest = () => {
+    enterGuestMode();
+    navigate({ to: "/" });
+  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,10 +70,10 @@ function SignupPage() {
           <Sparkles className="size-8" />
         </div>
         <h1 className="mb-2 text-2xl font-bold tracking-tight text-foreground">
-          {isEnglish ? "Create an Account" : "खाता बनाएं"}
+          Create an Account
         </h1>
         <p className="mb-8 font-hindi text-muted-foreground">
-          {isEnglish ? "Create a new account" : "नया खाता बनाएँ"}
+          Create a new account
         </p>
 
         {error && (
@@ -82,11 +85,11 @@ function SignupPage() {
         <form onSubmit={handleSignup} className="flex flex-col gap-4 text-left">
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground ml-1">
-              {isEnglish ? "Display Name" : "पूरा नाम"}
+              Display Name
             </label>
             <input
               type="text"
-              placeholder={isEnglish ? "e.g. Rahul" : "उदाहरण: राहुल"}
+              placeholder="e.g. Rahul"
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -96,7 +99,7 @@ function SignupPage() {
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground ml-1">
-              {isEnglish ? "Email" : "ईमेल"}
+              Email
             </label>
             <input
               type="email"
@@ -109,12 +112,12 @@ function SignupPage() {
 
           <div className="space-y-1.5 relative">
             <label className="text-sm font-medium text-foreground ml-1">
-              {isEnglish ? "Password" : "पासवर्ड"}
+              Password
             </label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
-                placeholder={isEnglish ? "Create a password" : "पासवर्ड बनाएं"}
+                placeholder="Create a password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-xl border border-input bg-background/50 px-4 py-3 pr-12 text-lg font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/60 focus:border-primary focus:ring-2 focus:ring-primary/20"
@@ -131,12 +134,12 @@ function SignupPage() {
 
           <div className="space-y-1.5 relative">
             <label className="text-sm font-medium text-foreground ml-1">
-              {isEnglish ? "Confirm Password" : "पासवर्ड की पुष्टि करें"}
+              Confirm Password
             </label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
-                placeholder={isEnglish ? "Confirm your password" : "पासवर्ड की पुष्टि करें"}
+                placeholder="Confirm your password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-lg font-medium text-foreground outline-none transition-all placeholder:text-muted-foreground/60 focus:border-primary focus:ring-2 focus:ring-primary/20"
@@ -152,19 +155,35 @@ function SignupPage() {
           >
             {isLoading ? (
               <Loader2 className="size-5 animate-spin" />
-            ) : isEnglish ? (
-              "Create Account"
             ) : (
-              "खाता बनाएं"
+              "Create Account"
             )}
           </button>
 
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            {isEnglish ? "Already have an account? " : "क्या आपके पास पहले से खाता है? "}
+            Already have an account?{" "}
             <Link to="/login" className="font-semibold text-primary hover:underline">
-              {isEnglish ? "Log in" : "लॉगिन"}
+              Log in
             </Link>
           </p>
+
+          <div className="relative my-3 flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border/60" />
+            </div>
+            <div className="relative bg-card px-3 text-xs uppercase tracking-wider text-muted-foreground">
+              Or
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleContinueAsGuest}
+            className="w-full flex justify-center items-center gap-2 rounded-xl border border-border/80 bg-background/60 hover:bg-secondary/60 py-2.5 text-sm font-semibold text-foreground transition-all shadow-xs cursor-pointer"
+          >
+            <User className="size-4 text-muted-foreground" />
+            <span>Continue as Guest</span>
+          </button>
         </form>
       </GlassCard>
     </div>
