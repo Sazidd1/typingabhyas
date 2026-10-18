@@ -127,6 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // to preserve the profile.tsx rename logic visually, though ideally they shouldn't rename
     // the ID that XP is tied to. We'll leave it as a visual update for now.
     if (userObject) {
+      mockBackend.updateProfileName?.(userObject.id, newName);
       setUserObject({ ...userObject, id: newName, name: newName });
       window.dispatchEvent(new Event("auth-change"));
     }
